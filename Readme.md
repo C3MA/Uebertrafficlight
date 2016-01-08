@@ -11,7 +11,8 @@ There is an Mosfet on each of the following GPIOs.
 * GPIO16
 * GPIO14
 * GPIO12
-Eeach MOSFET contorls each lamp, like this:
+
+Each MOSFET contorls each lamp, like this:
 <pre>
     24V -----(x)-----[]---- GND
                      |
