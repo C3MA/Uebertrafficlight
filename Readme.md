@@ -12,7 +12,8 @@ There is an Mosfet on each of the following GPIOs.
 * GPIO14
 * GPIO12
 Eeach MOSFET contorls each lamp, like this:
-
+<pre>
     24V -----(x)-----[]---- GND
                      |
                GPIO of ESP
+</pre>
