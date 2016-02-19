@@ -9,6 +9,8 @@ gpio.write(0, gpio.LOW)
 gpio.write(5, gpio.LOW)        
 gpio.write(6, gpio.LOW)        
 
+mqttIPserver="10.23.42.10"
+
 -- The Mqtt logic
 m = mqtt.Client("trafficlight", 120, "user", "pass")
 
@@ -35,6 +37,7 @@ function startTcpServer()
 end
 
 function mqttsubscribe()
+ tmr.stop(0) -- stop the reconnection
  tmr.alarm(1,50,0,function() 
         m:subscribe("/room/trafficlight/+/command",0, function(conn) 
             print("subscribed") 
@@ -43,7 +46,13 @@ function mqttsubscribe()
     end)
 end
 m:on("connect", mqttsubscribe)
-m:on("offline", function(con) print ("offline") end)
+m:on("offline", function(con) 
+    print ("offline")
+    tmr.alarm(0, 5000, 1, function()
+        print("Reconnecting...")
+        m:connect(mqttIPserver,1883,0)
+    end)
+end)
 m:on("message", function(conn, topic, data)
    -- skipp emtpy messages
    if (data == nil) then
@@ -119,7 +128,7 @@ tmr.alarm(0, 100, 1, function()
      -- Switch of the booting lamp
      gpio.write(5, gpio.LOW)
      print('IP: ',wifi.sta.getip())
-     m:connect("10.23.42.10",1883,0)
+     m:connect(mqttIPserver,1883,0)
      startTcpServer()
   end
 end)
