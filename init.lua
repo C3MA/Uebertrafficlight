@@ -48,10 +48,7 @@ end
 m:on("connect", mqttsubscribe)
 m:on("offline", function(con) 
     print ("offline")
-    tmr.alarm(0, 5000, 1, function()
-        print("Reconnecting...")
-        m:connect(mqttIPserver,1883,0)
-    end)
+    node.restart()
 end)
 m:on("message", function(conn, topic, data)
    -- skipp emtpy messages
