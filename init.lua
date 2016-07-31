@@ -120,6 +120,9 @@ tmr.alarm(0, 100, 1, function()
   if wifi.sta.status() ~= 5 then
      print("Connecting to AP...")
      gpio.write(5, ( gpio.read(5) + 1) % 2)
+     if (tmr.now() / 1000000) > 300 then
+        node.restart()
+     end
   else
      tmr.stop(0)
      -- Switch of the booting lamp
