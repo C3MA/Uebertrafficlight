@@ -44,6 +44,10 @@ function mqttsubscribe()
             m:publish("/room/trafficlight/ip",wifi.sta.getip(),0,0)
         end) 
     end)
+  -- Send an alive ping each half minute
+  tmr.alarm(2,30000,1,function() 
+        m:publish("/room/trafficlight/seconds",(tmr.now()/1000000),0,0)
+    end)
 end
 m:on("connect", mqttsubscribe)
 m:on("offline", function(con) 
