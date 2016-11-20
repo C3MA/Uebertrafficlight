@@ -7,8 +7,8 @@ gpio.mode(6, gpio.OUTPUT)
 -- Alles aus machen
 gpio.write(0, gpio.LOW)        
 gpio.write(5, gpio.LOW)        
-gpio.write(6, gpio.LOW)        
-
+gpio.write(6, gpio.LOW)     
+   
 mqttIPserver="10.23.42.10"
 
 -- The Mqtt logic
@@ -119,12 +119,14 @@ m:on("message", function(conn, topic, data)
    end
 end)
 
+print("Autostart in 1 second")
 -- Wait to be connect to the WiFi access point. 
-tmr.alarm(0, 100, 1, function()
+tmr.alarm(0, 1000, 1, function()
   if wifi.sta.status() ~= 5 then
-     print("Connecting to AP...")
+     print(tostring(tmr.now()/1000000) .. " Connecting to AP...")
      gpio.write(5, ( gpio.read(5) + 1) % 2)
      if (tmr.now() / 1000000) > 300 then
+        print("Forget it!")
         node.restart()
      end
   else
