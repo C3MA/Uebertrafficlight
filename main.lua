@@ -45,7 +45,8 @@ function mqttsubscribe()
         end) 
     end)
   -- Send an alive ping each half minute
-  tmr.alarm(2,30000,1,function() 
+  tmr.alarm(2,30000,1,function()
+        print("HEARTBEAT! " .. node.heap()) 
         m:publish("/room/trafficlight/seconds",(tmr.now()/1000000),0,0)
     end)
 end
@@ -59,6 +60,8 @@ m:on("message", function(conn, topic, data)
    if (data == nil) then
     return
    end
+   print("MQTT " .. topic .. " -> " .. data)
+   
    if topic=="/room/trafficlight/green/command" then
       if (data == "on") then
         tmr.stop(4)
