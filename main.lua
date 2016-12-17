@@ -37,11 +37,11 @@ function startTcpServer()
 end
 
 function mqttsubscribe()
- tmr.stop(0) -- stop the reconnection
  tmr.alarm(1,50,0,function() 
         m:subscribe("/room/trafficlight/+/command",0, function(conn) 
             print("subscribed") 
             m:publish("/room/trafficlight/ip",wifi.sta.getip(),0,0)
+            tmr.stop(0) -- stop startup watchdog
         end) 
     end)
   -- Send an alive ping each half minute
@@ -123,20 +123,31 @@ m:on("message", function(conn, topic, data)
 end)
 
 -- Wait to be connect to the WiFi access point. 
+startupStage = "wlan-setup"
 tmr.alarm(0, 1000, 1, function()
-if wifi.sta.status() ~= 5 then
-   print(tostring(tmr.now()/1000000) .. " Connecting to AP...")
-   gpio.write(5, ( gpio.read(5) + 1) % 2)
-   if (tmr.now() / 1000000) > 300 then
-      print("Forget it!")
-      node.restart()
-   end
-else
-   tmr.stop(0)
-   -- Switch of the booting lamp
-   gpio.write(5, gpio.LOW)
-   print('IP: ',wifi.sta.getip())
-   m:connect(mqttIPserver,1883,0)
-   startTcpServer()
-end
+    if startupStage == "wlan-setup" then
+        if wifi.sta.status() ~= 5 then
+            print(tostring(tmr.now()/1000000) .. " Connecting to AP...")
+            gpio.write(5, ( gpio.read(5) + 1) % 2)
+        else
+            -- Switch of the booting lamp
+            gpio.write(5, gpio.LOW)
+            print('IP: ',wifi.sta.getip())
+            if m:connect(mqttIPserver,1883,0) == false then
+                print("MQTT connect failed!")
+                node.restart()
+            end
+            startTcpServer()
+            startupStage = "mqtt-setup"
+        end
+    end
+
+    if startupStage == "mqtt-setup" then
+        print(tostring(tmr.now()/1000000) .. " Connecting and subscribing to MQTT...")
+    end
+    
+    if (tmr.now() / 1000000) > 60 then
+        print("Startup failed -> Rebooting")
+        node.restart()
+    end
 end)
